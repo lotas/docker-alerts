@@ -1,8 +1,10 @@
-package cli
+package main
 
 import (
-	"context"
 	"fmt"
+	"log"
+
+	"context"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,6 +16,21 @@ import (
 	"github.com/lotas/docker-alerts/internal/notifications"
 	"github.com/lotas/docker-alerts/internal/service"
 )
+
+func main() {
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if cfg.Debug {
+		fmt.Printf("Configuration:\n%+v\n", cfg)
+	}
+
+	if err := startApp(cfg); err != nil {
+		log.Fatal(err)
+	}
+}
 
 func startApp(cfg *config.Config) error {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -36,7 +53,7 @@ func startApp(cfg *config.Config) error {
 		return fmt.Errorf("failed to start event stream: %w", err)
 	}
 
-	// Set up graceful shutdown
+	// graceful shutdown
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
@@ -58,59 +75,52 @@ func startApp(cfg *config.Config) error {
 	}
 }
 
-// createNotifier creates a notifier based on the configuration
 func createNotifier(cfg *config.Config) notifications.Notifier {
 	var notifiers []notifications.Notifier
 
-	// Always add console notifier
 	consoleNotifier := notifications.NewConsoleNotifier("DOCKER-ALERT",
 		notifications.WithColor(),
 		notifications.WithVerbose(),
 	)
 	notifiers = append(notifiers, consoleNotifier)
 
-	// Add Slack notifier if configured
-	if cfg.Notifications.Slack.WebhookURL != "" {
+	if cfg.SlackWebhookURL != "" {
 		slackNotifier := notifications.NewSlackNotifier(
-			cfg.Notifications.Slack.WebhookURL,
-			cfg.Notifications.Slack.Channel,
+			cfg.SlackWebhookURL,
+			cfg.SlackChannel,
 		)
 		notifiers = append(notifiers, slackNotifier)
 	}
 
-	// Add Telegram notifier if configured
-	if cfg.Notifications.Telegram.Token != "" && cfg.Notifications.Telegram.ChatID != "" {
+	if cfg.TelegramToken != "" && cfg.TelegramChatID != "" {
 		telegramNotifier := notifications.NewTelegramNotifier(
-			cfg.Notifications.Telegram.Token,
-			cfg.Notifications.Telegram.ChatID,
+			cfg.TelegramToken,
+			cfg.TelegramChatID,
 		)
 		notifiers = append(notifiers, telegramNotifier)
 	}
 
-	// Add Email notifier if configured
-	if cfg.Notifications.Email.SMTPHost != "" {
+	if cfg.EmailSMTPHost != "" {
 		emailNotifier := notifications.NewEmailNotifier(
-			cfg.Notifications.Email.SMTPHost,
-			cfg.Notifications.Email.SMTPPort,
-			cfg.Notifications.Email.FromAddress,
-			cfg.Notifications.Email.ToAddresses,
+			cfg.EmailSMTPHost,
+			cfg.EmailSMTPPort,
+			cfg.EmailFrom,
+			cfg.EmailTo,
 		)
 
-		if cfg.Notifications.Email.SMTPUsername != "" && cfg.Notifications.Email.SMTPPassword != "" {
+		if cfg.EmailSMTPUsername != "" && cfg.EmailSMTPPassword != "" {
 			emailNotifier.SetAuth(
-				cfg.Notifications.Email.SMTPUsername,
-				cfg.Notifications.Email.SMTPPassword,
+				cfg.EmailSMTPUsername,
+				cfg.EmailSMTPPassword,
 			)
 		}
 
 		notifiers = append(notifiers, emailNotifier)
 	}
 
-	// Return multi-notifier if we have multiple notifiers
 	if len(notifiers) > 1 {
 		return notifications.NewMultiNotifier(notifiers...)
 	}
 
-	// Return console notifier as fallback
 	return consoleNotifier
 }

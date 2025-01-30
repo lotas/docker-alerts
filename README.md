@@ -33,17 +33,11 @@ make help
 
 1. Using command line flags:
 ```bash
-docker-alerts --docker-host="tcp://127.0.0.1:2375" --slack-webhook-url="https://..."
+docker-alerts
 ```
 
 2. Using environment variables:
 ```bash
-export DA_DOCKER_HOST=tcp://127.0.0.1:2375
 export DA_SLACK_WEBHOOK_URL=https://...
 docker-alerts
-```
-
-3. Using a config file:
-```bash
-docker-alerts --config=/path/to/config.yaml
 ```
