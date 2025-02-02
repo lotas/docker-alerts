@@ -18,7 +18,8 @@ type Config struct {
 	EmailSMTPUsername string   `arg:"--email-username,env:DA_EMAIL_SMTP_USERNAME"`
 	EmailSMTPPassword string   `arg:"--email-password,env:DA_EMAIL_SMTP_PASSWORD"`
 
-	Debug bool `arg:"--debug,env:DA_DEBUG"`
+	NoDebounce bool `arg:"--no-debounce,env:DA_NO_DEBOUNCE"`
+	Debug      bool `arg:"--debug,env:DA_DEBUG"`
 }
 
 func LoadConfig() (*Config, error) {

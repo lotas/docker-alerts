@@ -7,9 +7,14 @@ import (
 )
 
 type Notification struct {
-	Title   string
-	Message string
-	Level   string
+	Title     string
+	Message   string
+	Level     string
+	TimesSeen uint8
+}
+
+func (n *Notification) IsSame(other Notification) bool {
+	return n.Title == other.Title && n.Message == other.Message && n.Level == other.Level
 }
 
 type Notifier interface {
@@ -59,9 +64,11 @@ func CreateNotifier(cfg *config.Config) Notifier {
 		notifiers = append(notifiers, emailNotifier)
 	}
 
-	if len(notifiers) > 1 {
-		return NewMultiNotifier(notifiers...)
+	notifier := NewMultiNotifier(notifiers...)
+
+	if cfg.NoDebounce {
+		return notifier
 	}
 
-	return consoleNotifier
+	return NewDebouncerNotifier(notifier)
 }
