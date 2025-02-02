@@ -64,7 +64,7 @@ func (c *ConsoleNotifier) Notify(ctx context.Context, notification Notification)
 		)
 	}
 
-	if c.verbose {
+	if c.verbose && notification.Level != "" {
 		message += fmt.Sprintf("Level: %s\n", notification.Level)
 	}
 

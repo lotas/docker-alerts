@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/docker/docker/api/types/events"
+	"github.com/lotas/docker-alerts/internal/notifications"
 )
 
 type Event struct {
@@ -14,12 +15,6 @@ type Event struct {
 	Time      int64
 	Status    string
 	Labels    map[string]string
-}
-
-type Notification struct {
-	Title   string
-	Message string
-	Level   string
 }
 
 func NewEventFromDocker(msg events.Message) Event {
@@ -38,8 +33,8 @@ func (e Event) ShouldNotify() bool {
 	return true
 }
 
-func (e Event) ToNotification() Notification {
-	return Notification{
+func (e Event) ToNotification() notifications.Notification {
+	return notifications.Notification{
 		Title:   fmt.Sprintf("%s event: %s", e.Type, e.Action),
 		Message: fmt.Sprintf("Container: %s\nImage: %s", e.Container, e.Image),
 	}

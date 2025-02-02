@@ -9,13 +9,13 @@ import (
 
 type EventService struct {
 	dockerClient *docker.Client
-	notifier notifications.Notifier
+	notifier     notifications.Notifier
 }
 
 func NewEventService(dockerClient *docker.Client, notifier notifications.Notifier) *EventService {
 	return &EventService{
 		dockerClient: dockerClient,
-		notifier: notifier,
+		notifier:     notifier,
 	}
 }
 

@@ -37,22 +37,18 @@ func startApp(cfg *config.Config) error {
 	}
 	defer dockerClient.Close()
 
-	info, err := dockerClient.Info(ctx)
+	_, infoStr, err := dockerClient.Info(ctx)
 	if err != nil {
-	  return fmt.Errorf("failed to get Docker info: %w", err)
-	}
-
-	if cfg.Debug {
-	 serverInfo := fmt.Sprintf("Docker version: %v\n", info.ServerVersion)
-	 serverInfo += fmt.Sprintf("Docker host: %v\n", info.Name)
-	 serverInfo += fmt.Sprintf("Type: %v\n", info.OSType)
-	 serverInfo += fmt.Sprintf("Architecture: %v\n", info.Architecture)
-	 serverInfo += fmt.Sprintf("CPUs: %v\n", info.NCPU)
-	 serverInfo += fmt.Sprintf("Memory: %v MB\n", info.MemTotal / 1024 / 1024)
-	 fmt.Println(serverInfo)
+		return fmt.Errorf("failed to get Docker info: %w", err)
 	}
 
 	notifier := notifications.CreateNotifier(cfg)
+
+	notifier.Notify(ctx, notifications.Notification{
+		Title:   "Docker info",
+		Message: infoStr,
+	})
+
 	eventService := service.NewEventService(dockerClient, notifier)
 
 	eventStream, err := eventService.StreamEvents(ctx)
