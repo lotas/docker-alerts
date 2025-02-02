@@ -5,15 +5,12 @@ import (
 )
 
 type Config struct {
-	// Telegram
 	TelegramToken  string `arg:"--telegram-token,env:DA_TELEGRAM_TOKEN"`
 	TelegramChatID string `arg:"--telegram-chat-id,env:DA_TELEGRAM_CHAT_ID"`
 
-	// Slack
 	SlackWebhookURL string `arg:"--slack-webhook-url,env:DA_SLACK_WEBHOOK_URL"`
 	SlackChannel    string `arg:"--slack-channel,env:DA_SLACK_CHANNEL"`
 
-	// Email
 	EmailSMTPHost     string   `arg:"--email-smtp-host,env:DA_EMAIL_SMTP_HOST"`
 	EmailSMTPPort     int      `arg:"--email-smtp-port,env:DA_EMAIL_SMTP_PORT" default:"587"`
 	EmailFrom         string   `arg:"--email-from,env:DA_EMAIL_FROM_ADDRESS"`

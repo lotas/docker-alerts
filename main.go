@@ -11,7 +11,6 @@ import (
 
 	"github.com/lotas/docker-alerts/internal/config"
 	"github.com/lotas/docker-alerts/internal/docker"
-	"github.com/lotas/docker-alerts/internal/handlers"
 	"github.com/lotas/docker-alerts/internal/models"
 	"github.com/lotas/docker-alerts/internal/notifications"
 	"github.com/lotas/docker-alerts/internal/service"
@@ -21,10 +20,6 @@ func main() {
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	if cfg.Debug {
-		fmt.Printf("Configuration:\n%+v\n", cfg)
 	}
 
 	if err := startApp(cfg); err != nil {
@@ -42,11 +37,23 @@ func startApp(cfg *config.Config) error {
 	}
 	defer dockerClient.Close()
 
-	eventService := service.NewEventService(dockerClient)
+	info, err := dockerClient.Info(ctx)
+	if err != nil {
+	  return fmt.Errorf("failed to get Docker info: %w", err)
+	}
 
-	notifier := createNotifier(cfg)
+	if cfg.Debug {
+	 serverInfo := fmt.Sprintf("Docker version: %v\n", info.ServerVersion)
+	 serverInfo += fmt.Sprintf("Docker host: %v\n", info.Name)
+	 serverInfo += fmt.Sprintf("Type: %v\n", info.OSType)
+	 serverInfo += fmt.Sprintf("Architecture: %v\n", info.Architecture)
+	 serverInfo += fmt.Sprintf("CPUs: %v\n", info.NCPU)
+	 serverInfo += fmt.Sprintf("Memory: %v MB\n", info.MemTotal / 1024 / 1024)
+	 fmt.Println(serverInfo)
+	}
 
-	eventHandler := handlers.NewEventHandler(eventService, notifier)
+	notifier := notifications.CreateNotifier(cfg)
+	eventService := service.NewEventService(dockerClient, notifier)
 
 	eventStream, err := eventService.StreamEvents(ctx)
 	if err != nil {
@@ -57,11 +64,10 @@ func startApp(cfg *config.Config) error {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-	// Event loop
 	for {
 		select {
 		case event := <-eventStream.Events:
-			if err := eventHandler.HandleContainerEvent(ctx, models.NewEventFromDocker(event)); err != nil {
+			if err := eventService.HandleContainerEvent(ctx, models.NewEventFromDocker(event)); err != nil {
 				fmt.Printf("Error handling event: %v\n", err)
 			}
 		case err := <-eventStream.Errors:
@@ -73,54 +79,4 @@ func startApp(cfg *config.Config) error {
 			return ctx.Err()
 		}
 	}
-}
-
-func createNotifier(cfg *config.Config) notifications.Notifier {
-	var notifiers []notifications.Notifier
-
-	consoleNotifier := notifications.NewConsoleNotifier("DOCKER-ALERT",
-		notifications.WithColor(),
-		notifications.WithVerbose(),
-	)
-	notifiers = append(notifiers, consoleNotifier)
-
-	if cfg.SlackWebhookURL != "" {
-		slackNotifier := notifications.NewSlackNotifier(
-			cfg.SlackWebhookURL,
-			cfg.SlackChannel,
-		)
-		notifiers = append(notifiers, slackNotifier)
-	}
-
-	if cfg.TelegramToken != "" && cfg.TelegramChatID != "" {
-		telegramNotifier := notifications.NewTelegramNotifier(
-			cfg.TelegramToken,
-			cfg.TelegramChatID,
-		)
-		notifiers = append(notifiers, telegramNotifier)
-	}
-
-	if cfg.EmailSMTPHost != "" {
-		emailNotifier := notifications.NewEmailNotifier(
-			cfg.EmailSMTPHost,
-			cfg.EmailSMTPPort,
-			cfg.EmailFrom,
-			cfg.EmailTo,
-		)
-
-		if cfg.EmailSMTPUsername != "" && cfg.EmailSMTPPassword != "" {
-			emailNotifier.SetAuth(
-				cfg.EmailSMTPUsername,
-				cfg.EmailSMTPPassword,
-			)
-		}
-
-		notifiers = append(notifiers, emailNotifier)
-	}
-
-	if len(notifiers) > 1 {
-		return notifications.NewMultiNotifier(notifiers...)
-	}
-
-	return consoleNotifier
 }

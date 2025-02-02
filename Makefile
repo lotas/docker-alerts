@@ -15,6 +15,9 @@ build:
 run:
 	go run $(MAIN_PACKAGE)
 
+run-debug:
+	go run $(MAIN_PACKAGE) --debug
+
 clean:
 	@echo "Cleaning..."
 	@rm -rf $(GOBIN)

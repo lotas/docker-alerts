@@ -1,6 +1,9 @@
 package docker
 
 import (
+	"context"
+
+	"github.com/docker/docker/api/types/system"
 	"github.com/docker/docker/client"
 )
 
@@ -15,6 +18,10 @@ func NewClient() (*Client, error) {
 	}
 
 	return &Client{cli: cli}, nil
+}
+
+func (c *Client) Info(ctx context.Context) (system.Info, error) {
+  return c.cli.Info(ctx)
 }
 
 func (c *Client) Close() error {
