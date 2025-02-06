@@ -13,7 +13,6 @@ import (
 	"github.com/lotas/docker-alerts/internal/docker"
 	"github.com/lotas/docker-alerts/internal/models"
 	"github.com/lotas/docker-alerts/internal/notifications"
-	"github.com/lotas/docker-alerts/internal/service"
 )
 
 func main() {
@@ -53,9 +52,7 @@ func startApp(cfg *config.Config) error {
 		Message: infoStr,
 	})
 
-	eventService := service.NewEventService(dockerClient, notifier)
-
-	eventStream, err := eventService.StreamEvents(ctx)
+	eventStream, err := dockerClient.StreamEvents(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to start event stream: %w", err)
 	}
@@ -67,8 +64,12 @@ func startApp(cfg *config.Config) error {
 	for {
 		select {
 		case event := <-eventStream.Events:
-			if err := eventService.HandleContainerEvent(ctx, models.NewEventFromDocker(event)); err != nil {
-				fmt.Printf("Error handling event: %v\n", err)
+			evt := models.NewEventFromDocker(event)
+			if evt.ShouldNotify(cfg.Debug) {
+				err := notifier.Notify(ctx, evt.ToNotification())
+				if err != nil {
+					fmt.Printf("Error sending event %+v", err)
+				}
 			}
 		case err := <-eventStream.Errors:
 			fmt.Printf("Error receiving event: %v\n", err)

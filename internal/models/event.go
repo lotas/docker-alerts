@@ -29,7 +29,10 @@ func NewEventFromDocker(msg events.Message) Event {
 	}
 }
 
-func (e Event) ShouldNotify() bool {
+func (e Event) ShouldNotify(debug bool) bool {
+	if debug {
+		fmt.Printf("ShouldNotify type: %+v action: %+v", e.Type, e.Action)
+	}
 	return true
 }
 
