@@ -1,6 +1,8 @@
 package config
 
 import (
+	"fmt"
+
 	"github.com/alexflint/go-arg"
 )
 
@@ -26,4 +28,21 @@ func LoadConfig() (*Config, error) {
 	var cfg Config
 	arg.MustParse(&cfg)
 	return &cfg, nil
+}
+
+func (c *Config) PrintValues() {
+	fmt.Println("Config values")
+	fmt.Println("-------------")
+	fmt.Printf("TelegramToken:     %s\n", c.TelegramToken)
+	fmt.Printf("TelegramChatID:    %s\n", c.TelegramChatID)
+	fmt.Printf("SlackWebhookURL:   %s\n", c.SlackWebhookURL)
+	fmt.Printf("SlackChannel:      %s\n", c.SlackChannel)
+	fmt.Printf("EmailSMTPHost:     %s\n", c.EmailSMTPHost)
+	fmt.Printf("EmailSMTPPort:     %d\n", c.EmailSMTPPort)
+	fmt.Printf("EmailFrom:         %s\n", c.EmailFrom)
+	fmt.Printf("EmailTo:           %v\n", c.EmailTo)
+	fmt.Printf("EmailSMTPUsername: %s\n", c.EmailSMTPUsername)
+	fmt.Printf("EmailSMTPPassword: %s\n", c.EmailSMTPPassword)
+	fmt.Printf("NoDebounce:        %t\n", c.NoDebounce)
+	fmt.Printf("Debug:             %t\n", c.Debug)
 }

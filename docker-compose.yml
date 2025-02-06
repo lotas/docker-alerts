@@ -1,0 +1,15 @@
+services:
+  docker-alerts:
+    container_name: docker-alerts
+    image: lotas/docker-alerts
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - --debug
+    environment:
+      - DA_TELEGRAM_TOKEN=
+      - DA_TELEGRAM_CHAT_ID=
+      - DA_DEBUG=true

@@ -22,6 +22,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if cfg.Debug {
+		cfg.PrintValues()
+	}
+
 	if err := startApp(cfg); err != nil {
 		log.Fatal(err)
 	}
