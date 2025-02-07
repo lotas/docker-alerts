@@ -2,6 +2,19 @@
 
 A Go application that listens to Docker events and triggers actions based on specific events.
 
+## TODO
+
+- [ ] Notifications to
+  - [x] Telegram
+  - [ ] Slack
+  - [ ] Email
+- [ ] ShouldNotify - filter which events to send
+- [ ] Use docker labels
+  - [ ] supress container notifications
+  - [ ] use custom notification transport or params
+  - [ ] use container filters for events to decide in ShouldNotify
+
+
 ## Prerequisites
 
 - Go 1.16 or later
@@ -41,3 +54,15 @@ docker-alerts
 export DA_SLACK_WEBHOOK_URL=https://...
 docker-alerts
 ```
+
+3. Using docker (compose)
+```bash
+docker compose build
+docker compose up
+```
+
+
+## Credits
+
+Idea borrowed from <https://github.com/luc-ass/docker-telegram-notifier>
+with intent to have something written in GO for practicing purposes.
