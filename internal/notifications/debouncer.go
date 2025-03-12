@@ -15,7 +15,7 @@ func NewDebouncerNotifier(notifier Notifier) *DebouncerNotifier {
 	}
 }
 
-func (d *DebouncerNotifier) Notify(ctx context.Context, n Notification) error {
+func (d *DebouncerNotifier) Notify(ctx context.Context, n Notification, debug bool) error {
 	if n.IsSame(d.notification) {
 		d.notification.TimesSeen += 1
 	} else {
@@ -23,5 +23,5 @@ func (d *DebouncerNotifier) Notify(ctx context.Context, n Notification) error {
 	}
 	// add more logic to avoid sending same messages too frequently
 
-	return d.notifier.Notify(ctx, d.notification)
+	return d.notifier.Notify(ctx, d.notification, debug)
 }

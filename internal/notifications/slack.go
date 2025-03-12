@@ -18,7 +18,7 @@ func NewSlackNotifier(webhookURL, channel string) *SlackNotifier {
 	}
 }
 
-func (s *SlackNotifier) Notify(ctx context.Context, notification Notification) error {
+func (s *SlackNotifier) Notify(ctx context.Context, notification Notification, debug bool) error {
 	msg := slack.WebhookMessage{
 		Channel: s.channel,
 		Text:    notification.Message,

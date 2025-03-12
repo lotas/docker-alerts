@@ -18,7 +18,7 @@ func (n *Notification) IsSame(other Notification) bool {
 }
 
 type Notifier interface {
-	Notify(ctx context.Context, notification Notification) error
+	Notify(ctx context.Context, notification Notification, debug bool) error
 }
 
 func CreateNotifier(cfg *config.Config) Notifier {

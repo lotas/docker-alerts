@@ -43,7 +43,7 @@ func NewConsoleNotifier(prefix string, opts ...ConsoleOption) *ConsoleNotifier {
 	return n
 }
 
-func (c *ConsoleNotifier) Notify(ctx context.Context, notification Notification) error {
+func (c *ConsoleNotifier) Notify(ctx context.Context, notification Notification, debug bool) error {
 	timestamp := time.Now().Format(time.RFC3339)
 
 	var message string

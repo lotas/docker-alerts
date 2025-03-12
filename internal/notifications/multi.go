@@ -14,9 +14,9 @@ func NewMultiNotifier(notifiers ...Notifier) *MultiNotifier {
 	}
 }
 
-func (m *MultiNotifier) Notify(ctx context.Context, notification Notification) error {
+func (m *MultiNotifier) Notify(ctx context.Context, notification Notification, debug bool) error {
 	for _, notifier := range m.notifiers {
-		if err := notifier.Notify(ctx, notification); err != nil {
+		if err := notifier.Notify(ctx, notification, debug); err != nil {
 			return err
 		}
 	}
