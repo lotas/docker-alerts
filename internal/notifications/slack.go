@@ -26,3 +26,10 @@ func (s *SlackNotifier) Notify(ctx context.Context, notification Notification, d
 
 	return slack.PostWebhook(s.webhookURL, &msg)
 }
+
+func (c *SlackNotifier) NotifyMultiple(ctx context.Context, notifications []Notification, debug bool) error {
+	for _, n := range notifications {
+		c.Notify(ctx, n, debug)
+	}
+	return nil
+}

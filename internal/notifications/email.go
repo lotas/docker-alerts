@@ -97,3 +97,10 @@ func (e *EmailNotifier) Notify(ctx context.Context, notification Notification, d
 
 	return nil
 }
+
+func (c *EmailNotifier) NotifyMultiple(ctx context.Context, notifications []Notification, debug bool) error {
+	for _, n := range notifications {
+		c.Notify(ctx, n, debug)
+	}
+	return nil
+}

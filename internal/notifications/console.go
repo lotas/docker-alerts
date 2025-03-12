@@ -71,3 +71,10 @@ func (c *ConsoleNotifier) Notify(ctx context.Context, notification Notification,
 	log.Print(message)
 	return nil
 }
+
+func (c *ConsoleNotifier) NotifyMultiple(ctx context.Context, notifications []Notification, debug bool) error {
+	for _, n := range notifications {
+		c.Notify(ctx, n, debug)
+	}
+	return nil
+}

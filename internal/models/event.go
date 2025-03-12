@@ -18,15 +18,15 @@ const execDurationLabel = "execDuration"
 const exitCodeLabel = "exitCode"
 
 var SupportedEvents = EventActionMap{
-  "container": {
-    "start": true,
-    "die": true,
-    "health_status: healthy": true,
-    "health_status: unhealthy": true,
-  },
-  "connection": {
-    "message": true,
-  },
+	"container": {
+		"start":                    true,
+		"die":                      true,
+		"health_status: healthy":   true,
+		"health_status: unhealthy": true,
+	},
+	"connection": {
+		"message": true,
+	},
 }
 
 type Event struct {
@@ -52,38 +52,38 @@ func NewEventFromDocker(msg events.Message) Event {
 }
 
 func (e Event) ShouldNotify(debug bool) bool {
-  supported := false
-  if actionMap, ok := SupportedEvents[e.Type]; ok {
-    supported, _ = actionMap[e.Action]
-  }
-  if !supported {
-    return false
-  }
+	supported := false
+	if actionMap, ok := SupportedEvents[e.Type]; ok {
+		supported, _ = actionMap[e.Action]
+	}
+	if !supported {
+		return false
+	}
 
 	if debug {
-  	jsonStr, _ := json.MarshalIndent(e, "", "  ")
-  	fmt.Printf("Should notify:\n%v\n", string(jsonStr))
+		jsonStr, _ := json.MarshalIndent(e, "", "  ")
+		fmt.Printf("Should notify:\n%v\n", string(jsonStr))
 	}
 	return true
 }
 
 func (e Event) ToNotification() notifications.Notification {
-  info := []string{
-    fmt.Sprintf("Container: `%s`", e.Container[0:20]),
-    fmt.Sprintf("Image: `%s`", e.Image),
-  }
-  if name, ok := e.Labels[containerNameLabel]; ok {
-    info = append(info, fmt.Sprintf("Name: `%s`", name))
-  }
-  if project, ok := e.Labels[dockerComposeProjectLabel]; ok {
-    info = append(info, fmt.Sprintf("Project: `%s`", project))
-  }
-  if service, ok := e.Labels[dockerComposeServiceLabel]; ok {
-    info = append(info, fmt.Sprintf("Service: `%s`", service))
-  }
-  if exitCode, ok := e.Labels[exitCodeLabel]; ok {
-    info = append(info, fmt.Sprintf("Exit code: `%v`", exitCode))
-  }
+	info := []string{
+		fmt.Sprintf("Container: `%s`", e.Container[0:20]),
+		fmt.Sprintf("Image: `%s`", e.Image),
+	}
+	if name, ok := e.Labels[containerNameLabel]; ok {
+		info = append(info, fmt.Sprintf("Name: `%s`", name))
+	}
+	if project, ok := e.Labels[dockerComposeProjectLabel]; ok {
+		info = append(info, fmt.Sprintf("Project: `%s`", project))
+	}
+	if service, ok := e.Labels[dockerComposeServiceLabel]; ok {
+		info = append(info, fmt.Sprintf("Service: `%s`", service))
+	}
+	if exitCode, ok := e.Labels[exitCodeLabel]; ok {
+		info = append(info, fmt.Sprintf("Exit code: `%v`", exitCode))
+	}
 
 	return notifications.Notification{
 		Title:   fmt.Sprintf("%s %s", e.Type, e.Action),

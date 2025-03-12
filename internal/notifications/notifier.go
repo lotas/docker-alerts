@@ -6,29 +6,20 @@ import (
 	"github.com/lotas/docker-alerts/internal/config"
 )
 
-type Notification struct {
-	Title     string
-	Message   string
-	Level     string
-	TimesSeen uint8
-}
-
-func (n *Notification) IsSame(other Notification) bool {
-	return n.Title == other.Title && n.Message == other.Message && n.Level == other.Level
-}
-
 type Notifier interface {
 	Notify(ctx context.Context, notification Notification, debug bool) error
+	NotifyMultiple(ctx context.Context, notifications []Notification, debug bool) error
 }
 
 func CreateNotifier(cfg *config.Config) Notifier {
 	var notifiers []Notifier
+	var base []Notifier
 
 	consoleNotifier := NewConsoleNotifier("DOCKER-ALERT",
 		WithColor(),
 		WithVerbose(),
 	)
-	notifiers = append(notifiers, consoleNotifier)
+	base = append(base, consoleNotifier)
 
 	if cfg.SlackWebhookURL != "" {
 		slackNotifier := NewSlackNotifier(
@@ -64,11 +55,20 @@ func CreateNotifier(cfg *config.Config) Notifier {
 		notifiers = append(notifiers, emailNotifier)
 	}
 
-	notifier := NewMultiNotifier(notifiers...)
+	if len(notifiers) > 0 {
+		base = append(base, NewMultiNotifier(notifiers...))
+	}
+
+	var notifier Notifier
+	if len(base) == 1 {
+		notifier = base[0]
+	} else {
+		notifier = NewMultiNotifier(base...)
+	}
 
 	if cfg.NoDebounce {
 		return notifier
 	}
 
-	return NewDebouncerNotifier(notifier)
+	return NewDebouncerNotifier(notifier, cfg.DebounceDuration())
 }

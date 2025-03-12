@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/alexflint/go-arg"
 )
@@ -20,14 +21,23 @@ type Config struct {
 	EmailSMTPUsername string   `arg:"--email-username,env:DA_EMAIL_SMTP_USERNAME"`
 	EmailSMTPPassword string   `arg:"--email-password,env:DA_EMAIL_SMTP_PASSWORD"`
 
-	NoDebounce bool `arg:"--no-debounce,env:DA_NO_DEBOUNCE"`
-	Debug      bool `arg:"--debug,env:DA_DEBUG"`
+	NoDebounce      bool `arg:"--no-debounce,env:DA_NO_DEBOUNCE"`
+	DebounceSeconds int  `arg:"--debounce-seconds,env:DA_DEBOUNCE_SECONDS" default:"5"`
+	Debug           bool `arg:"--debug,env:DA_DEBUG"`
 }
 
 func LoadConfig() (*Config, error) {
 	var cfg Config
 	arg.MustParse(&cfg)
 	return &cfg, nil
+}
+
+func (c *Config) DebounceDuration() time.Duration {
+	if c.DebounceSeconds < 1 {
+		c.DebounceSeconds = 1
+	}
+
+	return time.Duration(c.DebounceSeconds) * time.Second
 }
 
 func (c *Config) PrintValues() {
@@ -44,5 +54,6 @@ func (c *Config) PrintValues() {
 	fmt.Printf("EmailSMTPUsername: %s\n", c.EmailSMTPUsername)
 	fmt.Printf("EmailSMTPPassword: %s\n", c.EmailSMTPPassword)
 	fmt.Printf("NoDebounce:        %t\n", c.NoDebounce)
+	fmt.Printf("DebounceSeconds:   %d\n", c.DebounceSeconds)
 	fmt.Printf("Debug:             %t\n", c.Debug)
 }
