@@ -11,7 +11,6 @@ import (
 
 	"github.com/lotas/docker-alerts/internal/config"
 	"github.com/lotas/docker-alerts/internal/docker"
-	"github.com/lotas/docker-alerts/internal/models"
 	"github.com/lotas/docker-alerts/internal/notifications"
 )
 
@@ -48,7 +47,8 @@ func startApp(cfg *config.Config) error {
 	notifier := notifications.CreateNotifier(cfg)
 
 	notifier.Notify(ctx, notifications.Notification{
-		Title:   "Docker info",
+		Type:    "Docker",
+		Action:  "info",
 		Message: infoStr,
 	}, cfg.Debug)
 
@@ -64,7 +64,7 @@ func startApp(cfg *config.Config) error {
 	for {
 		select {
 		case event := <-eventStream.Events:
-			evt := models.NewEventFromDocker(event)
+			evt := docker.NewEventFromDocker(event)
 			if evt.ShouldNotify(cfg.Debug) {
 				err := notifier.Notify(ctx, evt.ToNotification(), cfg.Debug)
 				if err != nil {

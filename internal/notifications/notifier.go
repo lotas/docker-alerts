@@ -56,7 +56,13 @@ func CreateNotifier(cfg *config.Config) Notifier {
 	}
 
 	if len(notifiers) > 0 {
-		base = append(base, NewMultiNotifier(notifiers...))
+		if cfg.NoDebounce {
+			base = append(base, NewMultiNotifier(notifiers...))
+		} else {
+			// only wrap external api notifiers with debouncer
+			// leaving console one as is
+			base = append(base, NewDebouncerNotifier(NewMultiNotifier(notifiers...), cfg.DebounceDuration()))
+		}
 	}
 
 	var notifier Notifier
@@ -66,9 +72,5 @@ func CreateNotifier(cfg *config.Config) Notifier {
 		notifier = NewMultiNotifier(base...)
 	}
 
-	if cfg.NoDebounce {
-		return notifier
-	}
-
-	return NewDebouncerNotifier(notifier, cfg.DebounceDuration())
+	return notifier
 }

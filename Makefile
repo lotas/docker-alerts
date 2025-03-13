@@ -16,7 +16,7 @@ run:
 	go run $(MAIN_PACKAGE)
 
 run-debug:
-	go run $(MAIN_PACKAGE) --debug
+	go run $(MAIN_PACKAGE) --debug --debounce-seconds=10
 
 clean:
 	@echo "Cleaning..."

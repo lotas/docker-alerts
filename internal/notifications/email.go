@@ -29,8 +29,8 @@ func (e *EmailNotifier) SetAuth(username, password string) {
 }
 
 func (e *EmailNotifier) Notify(ctx context.Context, notification Notification, debug bool) error {
-	subject := notification.Title
-	body := notification.Message
+	subject := notification.Type + " " + notification.Action
+	body := notification.Text()
 
 	message := []string{
 		"From: " + e.fromAddress,

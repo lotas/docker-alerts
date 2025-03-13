@@ -51,7 +51,7 @@ func (t *TelegramNotifier) sendMessage(ctx context.Context, chatId string, messa
 }
 
 func (t *TelegramNotifier) Notify(ctx context.Context, notification Notification, debug bool) error {
-	message := fmt.Sprintf("*%s*\n%s", notification.Title, notification.Message)
+	message := notification.Markdown()
 
 	return t.sendMessage(ctx, t.chatID, message)
 }
@@ -66,7 +66,7 @@ func (t *TelegramNotifier) NotifyMultiple(ctx context.Context, notifications []N
 	}
 
 	for _, n := range notifications {
-		messages = append(messages, fmt.Sprintf("*%s*\n%s", n.Title, n.Message))
+		messages = append(messages, n.Markdown())
 	}
 
 	return t.sendMessage(ctx, t.chatID, strings.Join(messages, "\n---\n"))

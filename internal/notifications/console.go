@@ -45,27 +45,23 @@ func NewConsoleNotifier(prefix string, opts ...ConsoleOption) *ConsoleNotifier {
 
 func (c *ConsoleNotifier) Notify(ctx context.Context, notification Notification, debug bool) error {
 	timestamp := time.Now().Format(time.RFC3339)
-
+	log.Println(notification.Text())
 	var message string
 	if c.colored {
 		// Add ANSI color codes
 		message = fmt.Sprintf("\033[1;34m[%s]\033[0m \033[1;32m[%s]\033[0m \033[1;33m%s\033[0m\n%s\n",
 			c.prefix,
 			timestamp,
-			notification.Title,
-			notification.Message,
+			notification.Type+" "+notification.Action,
+			notification.Text(),
 		)
 	} else {
 		message = fmt.Sprintf("[%s] [%s] %s\n%s\n",
 			c.prefix,
 			timestamp,
-			notification.Title,
-			notification.Message,
+			notification.Type+" "+notification.Type,
+			notification.Type,
 		)
-	}
-
-	if c.verbose && notification.Level != "" {
-		message += fmt.Sprintf("Level: %s\n", notification.Level)
 	}
 
 	log.Print(message)
