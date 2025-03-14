@@ -61,13 +61,9 @@ func (t *TelegramNotifier) NotifyMultiple(ctx context.Context, events []Event, d
 
 	messages := []string{}
 
-	if len(events) > 1 {
-		messages = append(messages, "Multiple events:")
-	}
-
 	for _, n := range events {
 		messages = append(messages, n.Markdown())
 	}
 
-	return t.sendMessage(ctx, t.chatID, strings.Join(messages, "\n---\n"))
+	return t.sendMessage(ctx, t.chatID, strings.Join(messages, "\n"))
 }

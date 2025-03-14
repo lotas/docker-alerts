@@ -22,7 +22,7 @@ type Config struct {
 	EmailSMTPPassword string   `arg:"--email-password,env:DA_EMAIL_SMTP_PASSWORD"`
 
 	NoDebounce      bool `arg:"--no-debounce,env:DA_NO_DEBOUNCE"`
-	DebounceSeconds int  `arg:"--debounce-seconds,env:DA_DEBOUNCE_SECONDS" default:"5"`
+	DebounceSeconds int  `arg:"--debounce-seconds,env:DA_DEBOUNCE_SECONDS" default:"3"`
 	Debug           bool `arg:"--debug,env:DA_DEBUG"`
 }
 

@@ -27,19 +27,16 @@ type Event struct {
 }
 
 const textTpl = `{{if .Message}}{{.Message}}{{- else -}}
-{{.Type}} {{.Action}}
-{{.Name}} [{{ShortID .Container}}]
-{{- if and .Project .Service }} {{.Project}} {{.Service}}{{- end}}
-{{if .ExitCode
--}}Exit with: {{.ExitCode}}{{if .ExitCodeDetails}} ({{.ExitCodeDetails}}){{end}}{{- end}}{{end -}}
+{{.Type}} {{ActionName .Action}} {{.Name}}
+{{- if and .Project .Service }} {{.Project}}::{{.Service}}{{- end}}
+{{- if .ExitCode }} Exit code: {{.ExitCode}}{{if .ExitCodeDetails}} ({{.ExitCodeDetails}}){{end}}{{- end}}{{end -}}
 `
 
 const mdTpl = `{{if .Message}}{{.Message}}{{- else -}}
-{{.Type}} **{{.Action}}**
-{{WrapCode .Name}} [{{ShortID .Container}}]
-{{- if and .Project .Service }} {{WrapCode .Project}} {{WrapCode .Service}}{{- end}}
+{{.Type}} **{{ActionName .Action}}** {{WrapCode .Name}}
+{{- if and .Project .Service }} {{WrapCode .Project}}::{{WrapCode .Service}}{{- end}}
 {{if .ExitCode
--}}Exit with: {{WrapCode .ExitCode}}{{if .ExitCodeDetails}} ({{.ExitCodeDetails}}){{end}}{{-
+-}}Exit code: {{WrapCode .ExitCode}}{{if .ExitCodeDetails}} ({{.ExitCodeDetails}}){{end}}{{-
 end}}{{end -}}
 `
 
@@ -54,10 +51,10 @@ var Gray = "\033[37m"
 var White = "\033[97m"
 
 const ansiTpl = `{{if .Message}}{{.Message}}{{- else -}}
-{{.Type}} {{Yellow}}{{.Action}}{{Reset}} {{Cyan}}{{.Name}}{{Reset}} [{{Gray}}{{ShortID .Container}}{{Reset}}]
+{{.Type}} {{Yellow}}{{ActionName .Action}}{{Reset}} {{Cyan}}{{.Name}}{{Reset}}
 {{- if and .Project .Service }} {{Blue}}{{.Project}}{{Reset}}::{{Magenta}}{{.Service}}{{Reset}}{{- end -}}
 {{if .ExitCode
-}} Exit with: {{if eq .ExitCode "0"}}{{Green}}{{.ExitCode}}{{Reset}}{{else}}{{Red}}{{.ExitCode}}{{Reset}}{{end
+}} Exit code: {{if eq .ExitCode "0"}}{{Green}}{{.ExitCode}}{{Reset}}{{else}}{{Red}}{{.ExitCode}}{{Reset}}{{end
 -}}{{if .ExitCodeDetails}} ({{.ExitCodeDetails}}){{end}}{{- end}}{{end -}}
 `
 
@@ -75,6 +72,18 @@ func init() {
 		"ShortID": func(s string) string { return s[0:20] },
 		"WrapCode": func(s string) string {
 			return "`" + strings.ReplaceAll(s, "`", "'") + "`"
+		},
+		"ActionName": func(s string) string {
+			if s == "die" {
+				return "stop"
+			}
+			if s == "health_status: healthy" {
+				return "healthy"
+			}
+			if s == "health_status: unhealthy" {
+				return "unhealthy"
+			}
+			return s
 		},
 		// ansi colors
 		"Red":     func() string { return Red },
