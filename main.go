@@ -46,9 +46,8 @@ func startApp(cfg *config.Config) error {
 
 	notifier := notifications.CreateNotifier(cfg)
 
-	notifier.Notify(ctx, notifications.Notification{
-		Type:    "Docker",
-		Action:  "info",
+	notifier.Notify(ctx, notifications.Event{
+		Type:    "Server info",
 		Message: infoStr,
 	}, cfg.Debug)
 
@@ -64,9 +63,9 @@ func startApp(cfg *config.Config) error {
 	for {
 		select {
 		case event := <-eventStream.Events:
-			evt := docker.NewEventFromDocker(event)
+			evt := notifications.NewEventFromDocker(event)
 			if evt.ShouldNotify(cfg.Debug) {
-				err := notifier.Notify(ctx, evt.ToNotification(), cfg.Debug)
+				err := notifier.Notify(ctx, evt, cfg.Debug)
 				if err != nil {
 					fmt.Printf("Error sending event %+v", err)
 				}

@@ -50,22 +50,22 @@ func (t *TelegramNotifier) sendMessage(ctx context.Context, chatId string, messa
 	return nil
 }
 
-func (t *TelegramNotifier) Notify(ctx context.Context, notification Notification, debug bool) error {
-	message := notification.Markdown()
+func (t *TelegramNotifier) Notify(ctx context.Context, event Event, debug bool) error {
+	message := event.Markdown()
 
 	return t.sendMessage(ctx, t.chatID, message)
 }
 
-func (t *TelegramNotifier) NotifyMultiple(ctx context.Context, notifications []Notification, debug bool) error {
-	// TODO: group by chatId, notifications might override some settings
+func (t *TelegramNotifier) NotifyMultiple(ctx context.Context, events []Event, debug bool) error {
+	// TODO: group by chatId, events might override some settings
 
 	messages := []string{}
 
-	if len(notifications) > 1 {
+	if len(events) > 1 {
 		messages = append(messages, "Multiple events:")
 	}
 
-	for _, n := range notifications {
+	for _, n := range events {
 		messages = append(messages, n.Markdown())
 	}
 

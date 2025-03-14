@@ -7,15 +7,15 @@ import (
 )
 
 type DebouncerNotifier struct {
-	notifier      Notifier
-	notifications []Notification
-	ctx           context.Context
-	debug         bool
-	lastSent      time.Time
-	timer         *time.Timer
-	mu            sync.Mutex
-	minInterval   time.Duration
-	isScheduled   bool
+	notifier    Notifier
+	events      []Event
+	ctx         context.Context
+	debug       bool
+	lastSent    time.Time
+	timer       *time.Timer
+	mu          sync.Mutex
+	minInterval time.Duration
+	isScheduled bool
 }
 
 func NewDebouncerNotifier(notifier Notifier, minInterval time.Duration) *DebouncerNotifier {
@@ -30,19 +30,19 @@ func NewDebouncerNotifier(notifier Notifier, minInterval time.Duration) *Debounc
 	}
 }
 
-func (d *DebouncerNotifier) NotifyMultiple(ctx context.Context, notifications []Notification, debug bool) error {
+func (d *DebouncerNotifier) NotifyMultiple(ctx context.Context, events []Event, debug bool) error {
 	// shouldn't be really called but ok
-	for _, n := range notifications {
+	for _, n := range events {
 		d.Notify(ctx, n, debug)
 	}
 	return nil
 }
 
-func (d *DebouncerNotifier) Notify(ctx context.Context, n Notification, debug bool) error {
+func (d *DebouncerNotifier) Notify(ctx context.Context, n Event, debug bool) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
-	d.notifications = append(d.notifications, n)
+	d.events = append(d.events, n)
 	d.ctx = ctx
 	d.debug = debug
 
@@ -75,14 +75,14 @@ func (d *DebouncerNotifier) Notify(ctx context.Context, n Notification, debug bo
 
 // must be called when lock is held
 func (d *DebouncerNotifier) sendAllLocked() {
-	if len(d.notifications) == 0 {
+	if len(d.events) == 0 {
 		return
 	}
 
-	d.notifier.NotifyMultiple(d.ctx, d.notifications, d.debug)
+	d.notifier.NotifyMultiple(d.ctx, d.events, d.debug)
 
 	d.lastSent = time.Now()
-	d.notifications = nil
+	d.events = nil
 }
 
 func (d *DebouncerNotifier) Close() {

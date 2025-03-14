@@ -18,17 +18,17 @@ func NewSlackNotifier(webhookURL, channel string) *SlackNotifier {
 	}
 }
 
-func (s *SlackNotifier) Notify(ctx context.Context, notification Notification, debug bool) error {
+func (s *SlackNotifier) Notify(ctx context.Context, event Event, debug bool) error {
 	msg := slack.WebhookMessage{
 		Channel: s.channel,
-		Text:    notification.Text(),
+		Text:    event.Text(),
 	}
 
 	return slack.PostWebhook(s.webhookURL, &msg)
 }
 
-func (c *SlackNotifier) NotifyMultiple(ctx context.Context, notifications []Notification, debug bool) error {
-	for _, n := range notifications {
+func (c *SlackNotifier) NotifyMultiple(ctx context.Context, events []Event, debug bool) error {
+	for _, n := range events {
 		c.Notify(ctx, n, debug)
 	}
 	return nil

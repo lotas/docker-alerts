@@ -28,9 +28,9 @@ func (e *EmailNotifier) SetAuth(username, password string) {
 	e.auth = smtp.PlainAuth("", username, password, e.host)
 }
 
-func (e *EmailNotifier) Notify(ctx context.Context, notification Notification, debug bool) error {
-	subject := notification.Type + " " + notification.Action
-	body := notification.Text()
+func (e *EmailNotifier) Notify(ctx context.Context, event Event, debug bool) error {
+	subject := event.Type + " " + event.Action
+	body := event.Text()
 
 	message := []string{
 		"From: " + e.fromAddress,
@@ -98,8 +98,8 @@ func (e *EmailNotifier) Notify(ctx context.Context, notification Notification, d
 	return nil
 }
 
-func (c *EmailNotifier) NotifyMultiple(ctx context.Context, notifications []Notification, debug bool) error {
-	for _, n := range notifications {
+func (c *EmailNotifier) NotifyMultiple(ctx context.Context, events []Event, debug bool) error {
+	for _, n := range events {
 		c.Notify(ctx, n, debug)
 	}
 	return nil

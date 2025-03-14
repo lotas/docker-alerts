@@ -7,17 +7,16 @@ import (
 )
 
 type Notifier interface {
-	Notify(ctx context.Context, notification Notification, debug bool) error
-	NotifyMultiple(ctx context.Context, notifications []Notification, debug bool) error
+	Notify(ctx context.Context, event Event, debug bool) error
+	NotifyMultiple(ctx context.Context, events []Event, debug bool) error
 }
 
 func CreateNotifier(cfg *config.Config) Notifier {
 	var notifiers []Notifier
 	var base []Notifier
 
-	consoleNotifier := NewConsoleNotifier("DOCKER-ALERT",
+	consoleNotifier := NewConsoleNotifier("Docker",
 		WithColor(),
-		WithVerbose(),
 	)
 	base = append(base, consoleNotifier)
 

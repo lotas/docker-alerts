@@ -14,18 +14,18 @@ func NewMultiNotifier(notifiers ...Notifier) *MultiNotifier {
 	}
 }
 
-func (m *MultiNotifier) Notify(ctx context.Context, notification Notification, debug bool) error {
+func (m *MultiNotifier) Notify(ctx context.Context, event Event, debug bool) error {
 	for _, notifier := range m.notifiers {
-		if err := notifier.Notify(ctx, notification, debug); err != nil {
+		if err := notifier.Notify(ctx, event, debug); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (m *MultiNotifier) NotifyMultiple(ctx context.Context, notifications []Notification, debug bool) error {
+func (m *MultiNotifier) NotifyMultiple(ctx context.Context, events []Event, debug bool) error {
 	for _, notifier := range m.notifiers {
-		if err := notifier.NotifyMultiple(ctx, notifications, debug); err != nil {
+		if err := notifier.NotifyMultiple(ctx, events, debug); err != nil {
 			return err
 		}
 	}

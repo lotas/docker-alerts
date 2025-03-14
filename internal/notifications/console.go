@@ -4,13 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 )
 
 type ConsoleNotifier struct {
 	prefix  string
 	colored bool
-	verbose bool
 }
 
 type ConsoleOption func(*ConsoleNotifier)
@@ -18,12 +16,6 @@ type ConsoleOption func(*ConsoleNotifier)
 func WithColor() ConsoleOption {
 	return func(n *ConsoleNotifier) {
 		n.colored = true
-	}
-}
-
-func WithVerbose() ConsoleOption {
-	return func(n *ConsoleNotifier) {
-		n.verbose = true
 	}
 }
 
@@ -43,24 +35,19 @@ func NewConsoleNotifier(prefix string, opts ...ConsoleOption) *ConsoleNotifier {
 	return n
 }
 
-func (c *ConsoleNotifier) Notify(ctx context.Context, notification Notification, debug bool) error {
-	timestamp := time.Now().Format(time.RFC3339)
-	log.Println(notification.Text())
+func (c *ConsoleNotifier) Notify(ctx context.Context, event Event, debug bool) error {
 	var message string
 	if c.colored {
-		// Add ANSI color codes
-		message = fmt.Sprintf("\033[1;34m[%s]\033[0m \033[1;32m[%s]\033[0m \033[1;33m%s\033[0m\n%s\n",
+		message = fmt.Sprintf(Yellow+"[%s]"+Reset+" "+Blue+"%s"+Reset+"%s",
 			c.prefix,
-			timestamp,
-			notification.Type+" "+notification.Action,
-			notification.Text(),
+			event.Type,
+			event.ANSI(),
 		)
 	} else {
-		message = fmt.Sprintf("[%s] [%s] %s\n%s\n",
+		message = fmt.Sprintf("[%s] %s%s",
 			c.prefix,
-			timestamp,
-			notification.Type+" "+notification.Type,
-			notification.Type,
+			event.Type,
+			event.Text(),
 		)
 	}
 
@@ -68,8 +55,8 @@ func (c *ConsoleNotifier) Notify(ctx context.Context, notification Notification,
 	return nil
 }
 
-func (c *ConsoleNotifier) NotifyMultiple(ctx context.Context, notifications []Notification, debug bool) error {
-	for _, n := range notifications {
+func (c *ConsoleNotifier) NotifyMultiple(ctx context.Context, events []Event, debug bool) error {
+	for _, n := range events {
 		c.Notify(ctx, n, debug)
 	}
 	return nil
