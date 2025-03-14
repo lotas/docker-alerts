@@ -3,6 +3,7 @@ package notifications
 import (
 	"bytes"
 	"fmt"
+	"strings"
 	"text/template"
 
 	"github.com/docker/docker/api/types/events"
@@ -25,26 +26,21 @@ type Event struct {
 	Message string
 }
 
-const textTpl = `
-{{if .Message}}{{.Message}}{{- else -}}
+const textTpl = `{{if .Message}}{{.Message}}{{- else -}}
 {{.Type}} {{.Action}}
-{{.Name}} [{{.Container}}]
-{{.Project}} {{.Service}}
-{{if .ExitCode}}
-Exit with: {{.ExitCode}}{{if .ExitCodeDetails}} ({{.ExitCodeDetails}}){{end}}
-{{end}}{{end}}
+{{.Name}} [{{ShortID .Container}}]
+{{- if and .Project .Service }} {{.Project}} {{.Service}}{{- end}}
+{{if .ExitCode
+-}}Exit with: {{.ExitCode}}{{if .ExitCodeDetails}} ({{.ExitCodeDetails}}){{end}}{{- end}}{{end -}}
 `
 
-const backtick = "`"
-
-const mdTpl = `
-{{if .Message}}{{.Message}}{{- else -}}
+const mdTpl = `{{if .Message}}{{.Message}}{{- else -}}
 {{.Type}} **{{.Action}}**
-` + backtick + `{{.Name}}` + backtick + ` [{{.Container}}]
-` + backtick + `{{.Project}}` + backtick + ` ` + backtick + `{{.Service}}` + backtick + `
-{{if .ExitCode}}
-Exit with: ` + backtick + `{{.ExitCode}}` + backtick + `{{if .ExitCodeDetails}} ({{.ExitCodeDetails}}){{end}}
-{{end}}{{end}}
+{{WrapCode .Name}} [{{ShortID .Container}}]
+{{- if and .Project .Service }} {{WrapCode .Project}} {{WrapCode .Service}}{{- end}}
+{{if .ExitCode
+-}}Exit with: {{WrapCode .ExitCode}}{{if .ExitCodeDetails}} ({{.ExitCodeDetails}}){{end}}{{-
+end}}{{end -}}
 `
 
 var Reset = "\033[0m"
@@ -57,14 +53,12 @@ var Cyan = "\033[36m"
 var Gray = "\033[37m"
 var White = "\033[97m"
 
-const ansiTpl = `
-{{if .Message}}{{.Message}}{{- else -}}
-{{.Type}} {{Yellow}}{{.Action}}{{Reset}}
-{{Cyan}}{{.Name}}{{Reset}} [{{Gray}}{{.Container}}{{Reset}}]
-{{Blue}}{{.Project}}{{Reset}} {{Magenta}}{{.Service}}{{Reset}}
-{{if .ExitCode}}
-Exit with: {{if eq .ExitCode "0"}}{{Green}}{{.ExitCode}}{{Reset}}{{else}}{{Red}}{{.ExitCode}}{{Reset}}{{end}}{{if .ExitCodeDetails}} ({{.ExitCodeDetails}}){{end}}
-{{end}}{{end}}
+const ansiTpl = `{{if .Message}}{{.Message}}{{- else -}}
+{{.Type}} {{Yellow}}{{.Action}}{{Reset}} {{Cyan}}{{.Name}}{{Reset}} [{{Gray}}{{ShortID .Container}}{{Reset}}]
+{{- if and .Project .Service }} {{Blue}}{{.Project}}{{Reset}}::{{Magenta}}{{.Service}}{{Reset}}{{- end -}}
+{{if .ExitCode
+}} Exit with: {{if eq .ExitCode "0"}}{{Green}}{{.ExitCode}}{{Reset}}{{else}}{{Red}}{{.ExitCode}}{{Reset}}{{end
+-}}{{if .ExitCodeDetails}} ({{.ExitCodeDetails}}){{end}}{{- end}}{{end -}}
 `
 
 var (
@@ -77,17 +71,12 @@ func init() {
 	// Initialize templates during package initialization
 	var err error
 
-	textTemplate, err = template.New("text").Parse(textTpl)
-	if err != nil {
-		panic(fmt.Sprintf("Failed to parse text template: %v", err))
-	}
-
-	mdTemplate, err = template.New("md").Parse(mdTpl)
-	if err != nil {
-		panic(fmt.Sprintf("Failed to parse markdown template: %v", err))
-	}
-
-	ansiTemplate, err = template.New("ansi").Funcs(template.FuncMap{
+	funcMap := template.FuncMap{
+		"ShortID": func(s string) string { return s[0:20] },
+		"WrapCode": func(s string) string {
+			return "`" + strings.ReplaceAll(s, "`", "'") + "`"
+		},
+		// ansi colors
 		"Red":     func() string { return Red },
 		"Green":   func() string { return Green },
 		"Yellow":  func() string { return Yellow },
@@ -97,7 +86,19 @@ func init() {
 		"Gray":    func() string { return Gray },
 		"White":   func() string { return White },
 		"Reset":   func() string { return Reset },
-	}).Parse(ansiTpl)
+	}
+
+	textTemplate, err = template.New("text").Funcs(funcMap).Parse(textTpl)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to parse text template: %v", err))
+	}
+
+	mdTemplate, err = template.New("md").Funcs(funcMap).Parse(mdTpl)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to parse markdown template: %v", err))
+	}
+
+	ansiTemplate, err = template.New("ansi").Funcs(funcMap).Parse(ansiTpl)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to parse ANSI template: %v", err))
 	}

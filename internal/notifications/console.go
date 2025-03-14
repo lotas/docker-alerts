@@ -38,15 +38,13 @@ func NewConsoleNotifier(prefix string, opts ...ConsoleOption) *ConsoleNotifier {
 func (c *ConsoleNotifier) Notify(ctx context.Context, event Event, debug bool) error {
 	var message string
 	if c.colored {
-		message = fmt.Sprintf(Yellow+"[%s]"+Reset+" "+Blue+"%s"+Reset+"%s",
+		message = fmt.Sprintf(Yellow+"[%s]"+Reset+" %s",
 			c.prefix,
-			event.Type,
 			event.ANSI(),
 		)
 	} else {
-		message = fmt.Sprintf("[%s] %s%s",
+		message = fmt.Sprintf("[%s] %s",
 			c.prefix,
-			event.Type,
 			event.Text(),
 		)
 	}
