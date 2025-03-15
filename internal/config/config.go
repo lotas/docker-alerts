@@ -12,7 +12,6 @@ type Config struct {
 	TelegramChatID string `arg:"--telegram-chat-id,env:DA_TELEGRAM_CHAT_ID"`
 
 	SlackWebhookURL string `arg:"--slack-webhook-url,env:DA_SLACK_WEBHOOK_URL"`
-	SlackChannel    string `arg:"--slack-channel,env:DA_SLACK_CHANNEL"`
 
 	EmailSMTPHost     string   `arg:"--email-smtp-host,env:DA_EMAIL_SMTP_HOST"`
 	EmailSMTPPort     int      `arg:"--email-smtp-port,env:DA_EMAIL_SMTP_PORT" default:"587"`
@@ -46,7 +45,6 @@ func (c *Config) PrintValues() {
 	fmt.Printf("TelegramToken:     %s\n", c.TelegramToken)
 	fmt.Printf("TelegramChatID:    %s\n", c.TelegramChatID)
 	fmt.Printf("SlackWebhookURL:   %s\n", c.SlackWebhookURL)
-	fmt.Printf("SlackChannel:      %s\n", c.SlackChannel)
 	fmt.Printf("EmailSMTPHost:     %s\n", c.EmailSMTPHost)
 	fmt.Printf("EmailSMTPPort:     %d\n", c.EmailSMTPPort)
 	fmt.Printf("EmailFrom:         %s\n", c.EmailFrom)

@@ -6,22 +6,18 @@ import (
 )
 
 type SlackNotifier struct {
-	client     *slack.Client
-	channel    string
 	webhookURL string
 }
 
-func NewSlackNotifier(webhookURL, channel string) *SlackNotifier {
+func NewSlackNotifier(webhookURL string) *SlackNotifier {
 	return &SlackNotifier{
-		client:  slack.New(webhookURL),
-		channel: channel,
+		webhookURL: webhookURL,
 	}
 }
 
 func (s *SlackNotifier) Notify(ctx context.Context, event Event, debug bool) error {
 	msg := slack.WebhookMessage{
-		Channel: s.channel,
-		Text:    event.Text(),
+		Text: event.Markdown(),
 	}
 
 	return slack.PostWebhook(s.webhookURL, &msg)
@@ -29,7 +25,9 @@ func (s *SlackNotifier) Notify(ctx context.Context, event Event, debug bool) err
 
 func (c *SlackNotifier) NotifyMultiple(ctx context.Context, events []Event, debug bool) error {
 	for _, n := range events {
-		c.Notify(ctx, n, debug)
+		if err := c.Notify(ctx, n, debug); err != nil {
+			return err
+		}
 	}
 	return nil
 }

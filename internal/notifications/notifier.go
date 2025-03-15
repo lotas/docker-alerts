@@ -16,7 +16,6 @@ func CreateNotifier(cfg *config.Config) Notifier {
 	if cfg.SlackWebhookURL != "" {
 		slackNotifier := NewSlackNotifier(
 			cfg.SlackWebhookURL,
-			cfg.SlackChannel,
 		)
 		notifiers = append(notifiers, slackNotifier)
 	}

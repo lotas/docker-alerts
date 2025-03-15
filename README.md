@@ -13,8 +13,22 @@ docker run \
   -e DA_SLACK_WEBHOOK_URL=https://...
   -e DA_TELEGRAM_TOKEN=111:xxxx \
   -e DA_TELEGRAM_CHAT_ID=12345 \
+  -e DA_SLACK_WEBHOOK_URL=https://... \
   lotas/docker-alerts
 ```
+
+## Telegram
+
+To send notifications to Telegram you need bot token and chat id:
+
+https://core.telegram.org/api#bot-api
+
+## Slack
+
+To send notifications to Slack you need incoming webhook url that is connected to channel:
+
+https://api.slack.com/messaging/webhooks
+
 
 ## Local development
 
