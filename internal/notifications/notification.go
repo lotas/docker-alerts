@@ -91,9 +91,9 @@ func init() {
 			return s
 		},
 		"Duration": func(s string) string {
-		  duration, err := time.ParseDuration(s + "s")
+			duration, err := time.ParseDuration(s + "s")
 			if err == nil {
-			 return duration.String()
+				return duration.String()
 			}
 			return s + "s"
 		},

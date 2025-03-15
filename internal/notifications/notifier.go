@@ -1,15 +1,8 @@
 package notifications
 
 import (
-	"context"
-
 	"github.com/lotas/docker-alerts/internal/config"
 )
-
-type Notifier interface {
-	Notify(ctx context.Context, event Event, debug bool) error
-	NotifyMultiple(ctx context.Context, events []Event, debug bool) error
-}
 
 func CreateNotifier(cfg *config.Config) Notifier {
 	var notifiers []Notifier
