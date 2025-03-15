@@ -1,6 +1,6 @@
-BINARY_NAME=docker-event-listener
+BINARY_NAME=docker-alerts
 MAIN_PACKAGE=main.go
-DOCKER_COMPOSE=docker-compose.yml
+IMAGE_NAME=lotas/docker-alerts
 
 GOBASE=$(shell pwd)
 GOBIN=$(GOBASE)/bin
@@ -46,4 +46,10 @@ deps:
 tidy:
 	go mod tidy
 
-.PHONY: build run clean test coverage lint fmt vet deps tidy
+build-image:
+	docker build -t $(IMAGE_NAME) .
+
+publish-image:
+	docker push $(IMAGE_NAME)
+
+.PHONY: build run clean test coverage lint fmt vet deps tidy build-image

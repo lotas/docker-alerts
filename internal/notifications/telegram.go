@@ -57,7 +57,7 @@ func (t *TelegramNotifier) Notify(ctx context.Context, event Event, debug bool) 
 }
 
 func (t *TelegramNotifier) NotifyMultiple(ctx context.Context, events []Event, debug bool) error {
-	// TODO: group by chatId, events might override some settings
+	// TODO: group by chatId, allow docker lables to override chat id
 
 	messages := []string{}
 

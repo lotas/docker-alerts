@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/docker/docker/api/types/events"
 )
@@ -22,21 +23,24 @@ type Event struct {
 	Service         string
 	ExitCode        string
 	ExitCodeDetails string
+	ExecDuration    string
 
 	Message string
 }
 
 const textTpl = `{{if .Message}}{{.Message}}{{- else -}}
-{{.Type}} {{ActionName .Action}} {{.Name}}
+{{.Type}} {{ActionName .Action}} {{.Name}} ({{.Image}})
+{{- if .ExecDuration}} (after {{Duration .ExecDuration}}){{- end -}}
 {{- if and .Project .Service }} {{.Project}}::{{.Service}}{{- end}}
-{{- if .ExitCode }} Exit code: {{.ExitCode}}{{if .ExitCodeDetails}} ({{.ExitCodeDetails}}){{end}}{{- end}}{{end -}}
+{{- if .ExitCode }} Exit code: {{.ExitCode}}{{if .ExitCodeDetails}} "{{.ExitCodeDetails}}"{{end}}{{- end}}{{end -}}
 `
 
 const mdTpl = `{{if .Message}}{{.Message}}{{- else -}}
-{{.Type}} **{{ActionName .Action}}** {{WrapCode .Name}}
+{{.Type}} *{{ActionName .Action}}* {{WrapCode .Name}} ({{WrapCode .Image}})
+{{- if .ExecDuration}} (after {{Duration .ExecDuration}}){{- end -}}
 {{- if and .Project .Service }} {{WrapCode .Project}}::{{WrapCode .Service}}{{- end}}
 {{if .ExitCode
--}}Exit code: {{WrapCode .ExitCode}}{{if .ExitCodeDetails}} ({{.ExitCodeDetails}}){{end}}{{-
+-}}Exit code: {{WrapCode .ExitCode}}{{if .ExitCodeDetails}} "_{{.ExitCodeDetails}}_"{{end}}{{-
 end}}{{end -}}
 `
 
@@ -51,11 +55,12 @@ var Gray = "\033[37m"
 var White = "\033[97m"
 
 const ansiTpl = `{{if .Message}}{{.Message}}{{- else -}}
-{{.Type}} {{Yellow}}{{ActionName .Action}}{{Reset}} {{Cyan}}{{.Name}}{{Reset}}
+{{.Type}} {{Yellow}}{{ActionName .Action}}{{Reset}} {{Cyan}}{{.Name}}{{Reset}} {{Green}}({{.Image}}){{Reset}}
+{{- if .ExecDuration}} (after {{White}}{{Duration .ExecDuration}}{{Reset}}){{- end -}}
 {{- if and .Project .Service }} {{Blue}}{{.Project}}{{Reset}}::{{Magenta}}{{.Service}}{{Reset}}{{- end -}}
 {{if .ExitCode
 }} Exit code: {{if eq .ExitCode "0"}}{{Green}}{{.ExitCode}}{{Reset}}{{else}}{{Red}}{{.ExitCode}}{{Reset}}{{end
--}}{{if .ExitCodeDetails}} ({{.ExitCodeDetails}}){{end}}{{- end}}{{end -}}
+-}}{{if .ExitCodeDetails}} "{{.ExitCodeDetails}}"{{end}}{{- end}}{{end -}}
 `
 
 var (
@@ -84,6 +89,13 @@ func init() {
 				return "unhealthy"
 			}
 			return s
+		},
+		"Duration": func(s string) string {
+		  duration, err := time.ParseDuration(s + "s")
+			if err == nil {
+			 return duration.String()
+			}
+			return s + "s"
 		},
 		// ansi colors
 		"Red":     func() string { return Red },
@@ -161,6 +173,7 @@ func NewEventFromDocker(msg events.Message) Event {
 	project, _ := labels[dockerComposeProjectLabel]
 	service, _ := labels[dockerComposeServiceLabel]
 	exitCode, _ := labels[exitCodeLabel]
+	execDuration, _ := labels[execDurationLabel]
 
 	return Event{
 		Type:      string(msg.Type),
@@ -176,6 +189,7 @@ func NewEventFromDocker(msg events.Message) Event {
 		Service:         service,
 		ExitCode:        exitCode,
 		ExitCodeDetails: getExitCodeDetails(exitCode),
+		ExecDuration:    execDuration,
 	}
 }
 
