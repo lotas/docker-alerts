@@ -26,10 +26,9 @@ func (m *mockDockerEventsClient) Events(ctx context.Context, options types.Event
 	// Default behavior if not set by a specific test
 	msgChan := make(chan events.Message)
 	errChan := make(chan error)
-	// Close channels immediately for tests not expecting events, or handle as per test needs.
-	// Consider if tests need to send dummy events or errors through these channels.
-	// close(msgChan)
-	// close(errChan)
+	// Close channels immediately for tests not expecting events.
+	close(msgChan)
+	close(errChan)
 	return msgChan, errChan
 }
 
