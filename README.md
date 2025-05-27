@@ -21,7 +21,11 @@ docker run \
 
 To send notifications to Telegram you need bot token and chat id:
 
+https://core.telegram.org/bots#3-how-do-i-create-a-bot
 https://core.telegram.org/api#bot-api
+
+How to get chat id: https://stackoverflow.com/questions/32423837/telegram-bot-how-to-get-a-group-chat-id/32572159#32572159i
+
 
 ## Slack
 
