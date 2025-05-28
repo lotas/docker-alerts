@@ -23,22 +23,12 @@ func NewTelegramNotifier(token, chatID string) *TelegramNotifier {
 	}
 }
 
-func EscapeMarkdownReservedChars(text string) string {
-	replacer := strings.NewReplacer(
-		"_", "\\_",
-		"*", "\\*",
-		"`", "\\`",
-		"[", "\\[",
-	)
-	return replacer.Replace(text)
-}
-
 func (t *TelegramNotifier) sendMessage(ctx context.Context, chatId string, message string, debug bool) error {
 	apiURL := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", t.token)
 
 	params := url.Values{}
 	params.Add("chat_id", chatId)
-	params.Add("text", EscapeMarkdownReservedChars(message))
+	params.Add("text", message)
 	params.Add("parse_mode", "Markdown")
 
 	if debug {

@@ -228,9 +228,22 @@ func (e *Event) Text() string {
 	return buf.String()
 }
 
+func EscapeMarkdownReservedChars(text string) string {
+	replacer := strings.NewReplacer(
+		"_", "\\_",
+		"*", "\\*",
+		"`", "\\`",
+		"[", "\\[",
+	)
+	return replacer.Replace(text)
+}
+
 func (e *Event) Markdown() string {
 	var buf bytes.Buffer
 	err := mdTemplate.Execute(&buf, e)
+	if e.Message != "" {
+		e.Message = EscapeMarkdownReservedChars(e.Message)
+	}
 	if err != nil {
 		fmt.Printf("Error generating template: %v\n", err)
 		// cheap fallback
