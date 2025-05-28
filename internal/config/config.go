@@ -42,15 +42,21 @@ func (c *Config) DebounceDuration() time.Duration {
 func (c *Config) PrintValues() {
 	fmt.Println("Config values")
 	fmt.Println("-------------")
-	fmt.Printf("TelegramToken:     %s\n", c.TelegramToken)
+	if c.TelegramToken != "" {
+		fmt.Printf("TelegramToken:     %s\n", c.TelegramToken[:15]+"***")
+	}
 	fmt.Printf("TelegramChatID:    %s\n", c.TelegramChatID)
-	fmt.Printf("SlackWebhookURL:   %s\n", c.SlackWebhookURL)
+	if c.SlackWebhookURL != "" {
+		fmt.Printf("SlackWebhookURL:   %s\n", c.SlackWebhookURL[:20]+"***")
+	}
 	fmt.Printf("EmailSMTPHost:     %s\n", c.EmailSMTPHost)
 	fmt.Printf("EmailSMTPPort:     %d\n", c.EmailSMTPPort)
 	fmt.Printf("EmailFrom:         %s\n", c.EmailFrom)
 	fmt.Printf("EmailTo:           %v\n", c.EmailTo)
 	fmt.Printf("EmailSMTPUsername: %s\n", c.EmailSMTPUsername)
-	fmt.Printf("EmailSMTPPassword: %s\n", c.EmailSMTPPassword)
+	if c.EmailSMTPPassword != "" {
+		fmt.Printf("EmailSMTPPassword: %s\n", "****")
+	}
 	fmt.Printf("NoDebounce:        %t\n", c.NoDebounce)
 	fmt.Printf("DebounceSeconds:   %d\n", c.DebounceSeconds)
 	fmt.Printf("Debug:             %t\n", c.Debug)

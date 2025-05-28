@@ -39,11 +39,17 @@ func (t *TelegramNotifier) sendMessage(ctx context.Context, chatId string, messa
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	if err != nil {
+		if debug {
+			fmt.Printf("Failed to create request: %w", err)
+		}
 		return fmt.Errorf("failed to create request: %w", err)
 	}
 
 	resp, err := t.client.Do(req)
 	if err != nil {
+		if debug {
+			fmt.Printf("Failed to send request: %w", err)
+		}
 		return fmt.Errorf("failed to send telegram message: %w", err)
 	}
 	defer resp.Body.Close()
@@ -54,6 +60,10 @@ func (t *TelegramNotifier) sendMessage(ctx context.Context, chatId string, messa
 			fmt.Printf("Failed API call - code: %d\n%v\n", resp.StatusCode, string(body))
 		}
 		return fmt.Errorf("telegram API returned non-200 status code: %d\n%v\n", resp.StatusCode, string(body))
+	}
+
+	if debug {
+		fmt.Println("Message sent")
 	}
 
 	return nil
