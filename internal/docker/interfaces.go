@@ -1,9 +1,9 @@
 package docker
 
 import (
-  "context"
+	"context"
 
- 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/api/types/system"
 )

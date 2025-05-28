@@ -93,9 +93,9 @@ func TestConsoleNotifier_Notify(t *testing.T) {
 		assert.Contains(t, output, "[COLORTEST]")
 		assert.Contains(t, output, sampleEvent.Name) // Name should be in the output
 		assert.Contains(t, output, Yellow)           // Action should be yellow
-		assert.Contains(t, output, Cyan)              // Name should be cyan
-		assert.Contains(t, output, Green)             // Image should be green
-		assert.Contains(t, output, Reset)             // Reset code should be present
+		assert.Contains(t, output, Cyan)             // Name should be cyan
+		assert.Contains(t, output, Green)            // Image should be green
+		assert.Contains(t, output, Reset)            // Reset code should be present
 	})
 
 	t.Run("notify with custom message", func(t *testing.T) {

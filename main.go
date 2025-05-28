@@ -46,10 +46,13 @@ func startApp(cfg *config.Config) error {
 
 	notifier := notifications.CreateNotifier(cfg)
 
-	notifier.Notify(ctx, notifications.Event{
+	err0 := notifier.Notify(ctx, notifications.Event{
 		Type:    "Server info",
 		Message: infoStr,
 	}, cfg.Debug)
+	if err0 != nil {
+		return fmt.Errorf("Failed to notify: %w", err0)
+	}
 
 	eventStream, err := dockerClient.StreamEvents(ctx)
 	if err != nil {

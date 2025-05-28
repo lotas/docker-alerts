@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/docker/docker/api/types/system"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"
+	"github.com/docker/docker/api/types/system"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

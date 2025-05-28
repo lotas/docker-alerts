@@ -23,15 +23,31 @@ func NewTelegramNotifier(token, chatID string) *TelegramNotifier {
 	}
 }
 
-func (t *TelegramNotifier) sendMessage(ctx context.Context, chatId string, message string) error {
+func EscapeMarkdownReservedChars(text string) string {
+	replacer := strings.NewReplacer(
+		"_", "\\_",
+		"*", "\\*",
+		"`", "\\`",
+		"[", "\\[",
+	)
+	return replacer.Replace(text)
+}
+
+func (t *TelegramNotifier) sendMessage(ctx context.Context, chatId string, message string, debug bool) error {
 	apiURL := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", t.token)
 
 	params := url.Values{}
 	params.Add("chat_id", chatId)
-	params.Add("text", message)
+	params.Add("text", EscapeMarkdownReservedChars(message))
 	params.Add("parse_mode", "Markdown")
 
-	req, err := http.NewRequestWithContext(ctx, "POST", apiURL+"?"+params.Encode(), nil)
+	if debug {
+		fmt.Printf("Sending TG message %v\n", params)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", apiURL, strings.NewReader(params.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
@@ -44,6 +60,9 @@ func (t *TelegramNotifier) sendMessage(ctx context.Context, chatId string, messa
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
+		if debug {
+			fmt.Printf("Failed API call - code: %d\n%v\n", resp.StatusCode, string(body))
+		}
 		return fmt.Errorf("telegram API returned non-200 status code: %d\n%v\n", resp.StatusCode, string(body))
 	}
 
@@ -53,7 +72,7 @@ func (t *TelegramNotifier) sendMessage(ctx context.Context, chatId string, messa
 func (t *TelegramNotifier) Notify(ctx context.Context, event Event, debug bool) error {
 	message := event.Markdown()
 
-	return t.sendMessage(ctx, t.chatID, message)
+	return t.sendMessage(ctx, t.chatID, message, debug)
 }
 
 func (t *TelegramNotifier) NotifyMultiple(ctx context.Context, events []Event, debug bool) error {
@@ -65,5 +84,5 @@ func (t *TelegramNotifier) NotifyMultiple(ctx context.Context, events []Event, d
 		messages = append(messages, n.Markdown())
 	}
 
-	return t.sendMessage(ctx, t.chatID, strings.Join(messages, "\n"))
+	return t.sendMessage(ctx, t.chatID, strings.Join(messages, "\n"), debug)
 }

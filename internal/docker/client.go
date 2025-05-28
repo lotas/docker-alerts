@@ -9,7 +9,7 @@ import (
 )
 
 type Client struct {
-  cli DockerAPIClient
+	cli DockerAPIClient
 }
 
 func NewClient() (*Client, error) {

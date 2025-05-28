@@ -139,13 +139,13 @@ func TestShouldNotify(t *testing.T) {
 
 func TestEventText(t *testing.T) {
 	event := Event{
-		Type:      "container",
-		Action:    "start",
-		Name:      "web-server",
-		Image:     "nginx:latest",
-		Project:   "myproject",
-		Service:   "webapp",
-		ExitCode:  "0",
+		Type:         "container",
+		Action:       "start",
+		Name:         "web-server",
+		Image:        "nginx:latest",
+		Project:      "myproject",
+		Service:      "webapp",
+		ExitCode:     "0",
 		ExecDuration: "10",
 	}
 
@@ -167,13 +167,13 @@ func TestEventText(t *testing.T) {
 
 func TestEventMarkdown(t *testing.T) {
 	event := Event{
-		Type:      "container",
-		Action:    "die",
-		Name:      "web-server",
-		Image:     "nginx:latest",
-		Project:   "myproject",
-		Service:   "webapp",
-		ExitCode:  "1",
+		Type:     "container",
+		Action:   "die",
+		Name:     "web-server",
+		Image:    "nginx:latest",
+		Project:  "myproject",
+		Service:  "webapp",
+		ExitCode: "1",
 	}
 
 	result := event.Markdown()
@@ -187,12 +187,12 @@ func TestEventMarkdown(t *testing.T) {
 
 func TestEventANSI(t *testing.T) {
 	event := Event{
-		Type:      "container",
-		Action:    "health_status: healthy",
-		Name:      "web-server",
-		Image:     "nginx:latest",
-		Project:   "myproject",
-		Service:   "webapp",
+		Type:    "container",
+		Action:  "health_status: healthy",
+		Name:    "web-server",
+		Image:   "nginx:latest",
+		Project: "myproject",
+		Service: "webapp",
 	}
 
 	result := event.ANSI()
@@ -221,7 +221,7 @@ func TestExitCodeDetails(t *testing.T) {
 			details := getExitCodeDetails(tc.exitCode)
 			if details != tc.expected {
 				t.Errorf("Expected exit code %s to map to '%s', got '%s'",
-                  tc.exitCode, tc.expected, details)
+					tc.exitCode, tc.expected, details)
 			}
 		})
 	}

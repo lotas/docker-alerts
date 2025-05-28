@@ -105,13 +105,12 @@ func TestStreamEvents(t *testing.T) {
 		// Not asserting channel equality here as the main point is to check filter passing.
 		// var expectedEventsChan <-chan events.Message = actualMockedEventsChan
 		// var expectedErrorsChan <-chan error = actualMockedErrorsChan
-		
+
 		filters1 := filters.NewArgs()
 		filters1.Add("event", "start")
 
 		filters2 := filters.NewArgs() // This should be ignored by StreamEvents
 		filters2.Add("event", "stop")
-
 
 		mockAPIClient := &mockDockerEventsClient{
 			eventsFunc: func(ctx context.Context, options types.EventsOptions) (<-chan events.Message, <-chan error) {
