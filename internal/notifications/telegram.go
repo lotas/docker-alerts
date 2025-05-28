@@ -29,7 +29,7 @@ func (t *TelegramNotifier) sendMessage(ctx context.Context, chatId string, messa
 	params := url.Values{}
 	params.Add("chat_id", chatId)
 	params.Add("text", message)
-	params.Add("parse_mode", "Markdown")
+	params.Add("parse_mode", "HTML")
 
 	if debug {
 		fmt.Printf("Sending TG message %v\n", params)
@@ -60,7 +60,7 @@ func (t *TelegramNotifier) sendMessage(ctx context.Context, chatId string, messa
 }
 
 func (t *TelegramNotifier) Notify(ctx context.Context, event Event, debug bool) error {
-	message := event.Markdown()
+	message := event.HTML()
 
 	return t.sendMessage(ctx, t.chatID, message, debug)
 }
@@ -71,7 +71,7 @@ func (t *TelegramNotifier) NotifyMultiple(ctx context.Context, events []Event, d
 	messages := []string{}
 
 	for _, n := range events {
-		messages = append(messages, n.Markdown())
+		messages = append(messages, n.HTML())
 	}
 
 	return t.sendMessage(ctx, t.chatID, strings.Join(messages, "\n"), debug)

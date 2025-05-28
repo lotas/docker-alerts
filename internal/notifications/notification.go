@@ -35,13 +35,20 @@ const textTpl = `{{if .Message}}{{.Message}}{{- else -}}
 {{- if .ExitCode }} Exit code: {{.ExitCode}}{{if .ExitCodeDetails}} "{{.ExitCodeDetails}}"{{end}}{{- end}}{{end -}}
 `
 
-const mdTpl = `{{if .Message}}{{.Message}}{{- else -}}
+const mdTpl = `{{if .Message}}{{EscapeMarkdown .Message}}{{- else -}}
 {{.Type}} *{{ActionName .Action}}* {{WrapCode .Name}} ({{WrapCode .Image}})
 {{- if .ExecDuration}} (after {{Duration .ExecDuration}}){{- end -}}
 {{- if and .Project .Service }} {{WrapCode .Project}}::{{WrapCode .Service}}{{- end}}
 {{if .ExitCode
 -}}Exit code: {{WrapCode .ExitCode}}{{if .ExitCodeDetails}} "_{{.ExitCodeDetails}}_"{{end}}{{-
 end}}{{end -}}
+`
+
+const htmlTpl = `{{if .Message}}{{.Message}}{{- else -}}
+{{.Type}} <b>{{ActionName .Action}}</b> <code>{{EscapeHTML .Name}}</code> (<code>{{EscapeHTML .Image}}</code>)
+{{- if .ExecDuration}} (after <u>{{Duration .ExecDuration}}</u>){{- end -}}
+{{- if and .Project .Service }} <code>{{EscapeHTML .Project}}</code>::<code>{{EscapeHTML .Service}}</code>{{- end}}
+{{- if .ExitCode}} Exit code: <code>{{.ExitCode}}</code>{{if .ExitCodeDetails}} "<i>{{EscapeHTML .ExitCodeDetails}}</i>"{{end}}{{- end}}{{end -}}
 `
 
 var Reset = "\033[0m"
@@ -67,6 +74,7 @@ var (
 	textTemplate *template.Template
 	mdTemplate   *template.Template
 	ansiTemplate *template.Template
+	htmlTemplate *template.Template
 )
 
 func init() {
@@ -98,15 +106,17 @@ func init() {
 			return s + "s"
 		},
 		// ansi colors
-		"Red":     func() string { return Red },
-		"Green":   func() string { return Green },
-		"Yellow":  func() string { return Yellow },
-		"Blue":    func() string { return Blue },
-		"Magenta": func() string { return Magenta },
-		"Cyan":    func() string { return Cyan },
-		"Gray":    func() string { return Gray },
-		"White":   func() string { return White },
-		"Reset":   func() string { return Reset },
+		"Red":            func() string { return Red },
+		"Green":          func() string { return Green },
+		"Yellow":         func() string { return Yellow },
+		"Blue":           func() string { return Blue },
+		"Magenta":        func() string { return Magenta },
+		"Cyan":           func() string { return Cyan },
+		"Gray":           func() string { return Gray },
+		"White":          func() string { return White },
+		"Reset":          func() string { return Reset },
+		"EscapeHTML":     EscapeHTMLTelegram,
+		"EscapeMarkdown": EscapeMarkdownReservedChars,
 	}
 
 	textTemplate, err = template.New("text").Funcs(funcMap).Parse(textTpl)
@@ -122,6 +132,11 @@ func init() {
 	ansiTemplate, err = template.New("ansi").Funcs(funcMap).Parse(ansiTpl)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to parse ANSI template: %v", err))
+	}
+
+	htmlTemplate, err = template.New("html").Funcs(funcMap).Parse(htmlTpl)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to parse HTML template: %v", err))
 	}
 }
 
@@ -238,12 +253,19 @@ func EscapeMarkdownReservedChars(text string) string {
 	return replacer.Replace(text)
 }
 
+func EscapeHTMLTelegram(text string) string {
+	replacer := strings.NewReplacer(
+		"&", "&amp;",
+		"<", "&lt;",
+		">", "&gt;",
+		"\"", "&quot;",
+	)
+	return replacer.Replace(text)
+}
+
 func (e *Event) Markdown() string {
 	var buf bytes.Buffer
 	err := mdTemplate.Execute(&buf, e)
-	if e.Message != "" {
-		e.Message = EscapeMarkdownReservedChars(e.Message)
-	}
 	if err != nil {
 		fmt.Printf("Error generating template: %v\n", err)
 		// cheap fallback
@@ -262,5 +284,15 @@ func (e *Event) ANSI() string {
 		return e.Type + " " + e.Action + " " + e.Name
 	}
 
+	return buf.String()
+}
+
+func (e *Event) HTML() string {
+	var buf bytes.Buffer
+	err := htmlTemplate.Execute(&buf, e)
+	if err != nil {
+		fmt.Printf("Error generating HTML template: %v\n", err)
+		return e.Type + " " + e.Action + " " + e.Name
+	}
 	return buf.String()
 }
