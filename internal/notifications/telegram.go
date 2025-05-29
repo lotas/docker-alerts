@@ -40,7 +40,7 @@ func (t *TelegramNotifier) sendMessage(ctx context.Context, chatId string, messa
 
 	if err != nil {
 		if debug {
-			fmt.Printf("Failed to create request: %w", err)
+			fmt.Printf("Failed to create request: %v", err)
 		}
 		return fmt.Errorf("failed to create request: %w", err)
 	}
@@ -48,7 +48,7 @@ func (t *TelegramNotifier) sendMessage(ctx context.Context, chatId string, messa
 	resp, err := t.client.Do(req)
 	if err != nil {
 		if debug {
-			fmt.Printf("Failed to send request: %w", err)
+			fmt.Printf("Failed to send request: %v", err)
 		}
 		return fmt.Errorf("failed to send telegram message: %w", err)
 	}
